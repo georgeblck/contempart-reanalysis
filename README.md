@@ -1,6 +1,12 @@
 # contempart-clip
 
-Re-analysis of the [contempArt](https://arxiv.org/abs/2008.09558) dataset (Huckle, Garcia & Nakashima, ECCV Workshop 2020) using CLIP and Stable Diffusion embeddings.
+A re-analysis of the [contempArt study](https://arxiv.org/abs/2008.09558) (Huckle, Garcia & Nakashima, ECCV Workshop 2020) using CLIP and Stable Diffusion embeddings.
+
+See also: [contempart-eccv2020](https://github.com/georgeblck/contempart-eccv2020) (reproduction of the original analysis) and [contempart](https://github.com/georgeblck/contempart) (dataset).
+
+## TL;DR
+
+The original study found no link between artistic style and artist demographics. We re-test with modern embeddings that separate content (what is painted) from appearance (how it looks). Institutional factors (school, professor, social network) shape content but not appearance. The original null result holds for visual style, but content tells a different story.
 
 ## Why
 
@@ -19,58 +25,55 @@ Two modern embeddings replace VGG (following Kim et al. 2025):
 
 ## Results
 
-All tests use the Mantel test (permutation-based correlation between distance matrices, 9,999 permutations), the same family of test used in the original paper but with formal p-values.
+### db-RDA: which demographics predict embedding distances?
 
-### Content (C-vectors) reveals institutional effects that style did not
+[db-RDA](https://en.wikipedia.org/wiki/Redundancy_analysis) (distance-based Redundancy Analysis) is multivariate regression on distance matrices. It tests each variable's unique contribution while controlling for the others, resolving confounding (e.g. professors are nested within schools).
 
-| Variable | C-vectors (content) | A-vectors (appearance) | VGG (style, 2020) |
-|----------|--------------------|-----------------------|-------------------|
-| School | r=0.030, p=0.0001 | r=0.000, p=0.99 | not formally tested |
-| Professor class | r=0.028, p=0.0001 | r=0.003, p=0.43 | not tested |
-| Gender | r=0.010, p=0.18 | r=0.020, p=0.007 | not formally tested |
-| Nationality | r=-0.093, p=0.08 | r=-0.010, p=0.77 | not formally tested |
+C-vectors (content), 24.5% total variance explained (F=2.71, p=0.0001):
 
-School and professor class predict content similarity (C-vectors) but not appearance (A-vectors). Gender is the reverse: a small appearance effect but no content effect.
+| Variable | Var. explained | F | p-value | |
+|----------|---------------:|----:|--------:|---|
+| Professor class | 10.5% | 1.76 | 0.0001 | ✅ |
+| Continent | 3.5% | 5.49 | 0.0001 | ✅ |
+| Gender | 1.4% | 3.17 | 0.013 | ✅ |
+| School | 0.6% | 2.95 | 0.044 | ✅ (weak after controlling for professor) |
 
-### Social network correlation matches content, not style
+Variance partition (school vs professor): school unique 0.4%, professor unique 5.0%, shared 6.3%. The school effect is almost entirely explained by who teaches there.
 
-| Embedding | vs G^U (artist follows artist) | vs G^Y (full network) |
-|-----------|-------------------------------|----------------------|
-| C-vectors | r=0.111, p=0.009 | r=0.002, p=0.96 |
-| A-vectors | r=0.013, p=0.66 | r=0.038, p=0.13 |
-| VGG (2020) | rho=0.007 | rho=-0.032 |
+A-vectors (appearance), 16.4% total variance explained (F=1.64, p=0.0007):
 
-Tested on the original paper's pre-computed node2vec distance matrices (same social network data, same 364 artists). Only C-vectors show a significant correlation with who follows whom. A-vectors and VGG style do not.
+| Variable | Var. explained | F | p-value | |
+|----------|---------------:|----:|--------:|---|
+| Gender | 2.0% | 2.98 | 0.023 | ✅ |
+| Continent | 2.5% | 2.48 | 0.026 | ✅ |
+| Professor class | 11.6% | 1.23 | 0.12 | ❌ |
+| School | 0.4% | 1.09 | 0.33 | ❌ |
+
+Different pattern: gender and continent predict appearance, school and professor do not. The institutional effects that shape content have no impact on how the art looks.
+
+### Social network: who follows whom predicts content, not style
+
+| Embedding | vs G^U (artist follows artist) | | vs G^Y (full network) | |
+|-----------|-------------------------------|---|----------------------|---|
+| C-vectors (content) | r=0.111, p=0.009 | ✅ | r=0.002, p=0.96 | ❌ |
+| A-vectors (appearance) | r=0.013, p=0.66 | ❌ | r=0.038, p=0.13 | ❌ |
+| VGG style (2020) | rho=0.007 | ❌ | rho=-0.032 | ❌ |
+
+Tested on the original paper's pre-computed node2vec distance matrices (same 364 artists). G^U = direct artist-to-artist follows. G^Y = full network including non-artist accounts (galleries, friends, etc.). Only C-vectors vs G^U show a significant correlation.
 
 ### What this means
 
-The original paper's conclusion that "artistic style [is] entirely independent of any non-visual data" holds for appearance and style features (A-vectors and VGG confirm the null). But content is different. Artists at the same school or under the same professor produce more semantically similar work. Artists who follow each other on Instagram paint more similar subjects. These effects are small (r = 0.03 to 0.11) but significant, and they were invisible to texture-based features.
+The original paper's conclusion that "artistic style [is] entirely independent of any non-visual data" holds for appearance and style features (A-vectors and VGG confirm the null). But content is different. Artists under the same professor produce more semantically similar work, and this explains most of the school-level effect. Artists who follow each other on Instagram paint more similar subjects. Continent of origin also predicts content once other factors are controlled for.
 
-The gender result is interesting in the opposite direction: men and women produce art that looks slightly different (A-vectors, r=0.020) but not art that depicts different things (C-vectors, r=0.010).
+The gender result is interesting in the opposite direction: men and women produce art that looks slightly different (A-vectors) but not art that depicts different things (C-vectors).
 
 For the full analysis, methodology comparison, and paper quotes, see [results/comparison.md](results/comparison.md) and [results/report.md](results/report.md).
 
-## Setup
-
-```bash
-uv sync                        # Python dependencies
-Rscript -e 'renv::restore()'   # R dependencies (for ggplot2 visualizations)
-```
-
-## Pipeline
-
-```bash
-uv run python -m src.step0_init_report          # 0. Initialize report
-uv run python -m src.step1_embed                # 1. Extract embeddings (~2 hrs)
-uv run python -m src.step2_statistics           # 2. Mantel + PERMANOVA tests
-Rscript R/visualize.R                           # 3. UMAP plots (ggplot2)
-uv run python -m src.step4_graph                # 4. Social network correlation
-```
-
-Step 1 supports checkpointing (resumes from last saved batch if interrupted). Use `--vectors c` or `--vectors a` to extract one type only.
-
 ## Data
 
-442 artists, 15 German art schools, 14,559 artworks. Data is not included in this repo. See [data/README.md](data/README.md) for the expected structure.
+442 artists, 15 German art schools, 14,559 artworks. Image data is not included in this repo. See [data/README.md](data/README.md) for the expected structure. Social network distance matrices from the original 2020 analysis are included in [data/original_2020/](data/original_2020/).
 
-Social network distance matrices from the original 2020 analysis are included in [data/original_2020/](data/original_2020/) for direct comparison.
+## References
+
+- Huckle, N., Garcia, N., & Nakashima, Y. (2020). contempArt: A dataset of contemporary artworks and socio-demographic data. *ECCV Workshop on Computer Vision for Fashion, Art and Design*. [arXiv:2008.09558](https://arxiv.org/abs/2008.09558)
+- Kim, J., Lee, B., You, T., & Yun, J. (2025). Context-aware Multimodal AI Reveals Hidden Pathways in Five Centuries of Art Evolution. *arXiv preprint*. [arXiv:2503.13531](https://arxiv.org/abs/2503.13531)

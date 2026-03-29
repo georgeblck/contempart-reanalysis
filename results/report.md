@@ -3,7 +3,7 @@
 Generated: 2026-03-29
 
 - [Step 1: Embeddings](#step-1-embeddings)
-- [Step 2: Statistical Tests](#step-2-statistical-tests)
+- [Step 2: Statistical Tests](#step-2-statistical-tests) (Mantel, PERMANOVA, db-RDA)
 - [Step 3: Visualizations](#step-3-visualizations)
 - [Step 4: Social Network Analysis](#step-4-social-network-analysis)
 
@@ -62,6 +62,45 @@ See [comparison.md](comparison.md) for a detailed side-by-side with the original
 | Professor | r=0.028, p=0.0001 | F=2.34, p=0.0001 | r=0.003, p=0.43 | F=1.55, p=0.003 |
 
 C-vectors (content) show strong school and professor effects in both tests. A-vectors (appearance) show weaker effects, significant only in PERMANOVA (centroid differences) but not Mantel (pairwise distances). Gender is significant for both embedding types in PERMANOVA. Nationality shows no signal in either.
+
+### db-RDA (distance-based Redundancy Analysis)
+
+Mantel and PERMANOVA test one variable at a time. This is a problem because school and professor are confounded (professors work at specific schools). db-RDA solves this by fitting all variables simultaneously and testing each one's unique contribution after controlling for the others. It is multivariate regression on distance matrices: the 441x441 pairwise cosine distance matrix is converted to principal coordinates, then regressed against the demographic variables. Significance is assessed via 9,999 permutations.
+
+#### C-vectors (content)
+
+Total variance explained by all demographics: 24.5% (F=2.71, p=0.0001).
+
+Marginal tests (Type II, each variable controlling for all others):
+
+| Variable | Df | Var. explained | F | p-value | Significant? |
+|----------|---:|---------------:|----:|--------:|---|
+| Professor class | 28 | 10.5% | 1.76 | 0.0001 | yes |
+| Continent | 3 | 3.5% | 5.49 | 0.0001 | yes |
+| Gender | 2 | 1.4% | 3.17 | 0.013 | yes |
+| School | 1 | 0.6% | 2.95 | 0.044 | yes (weak) |
+
+Variance partition (school vs professor):
+- School alone: 0.4%
+- Professor alone: 5.0%
+- Shared (attributable to either): 6.3%
+
+The school effect is almost entirely explained by who teaches there. Professor class is the real driver.
+
+Continent emerges as significant (p=0.0001) once school and professor are controlled for. This was masked in the Mantel test (p=0.08) because continent correlates with school choice.
+
+#### A-vectors (appearance)
+
+Total variance explained by all demographics: 16.4% (F=1.64, p=0.0007).
+
+| Variable | Df | Var. explained | F | p-value | Significant? |
+|----------|---:|---------------:|----:|--------:|---|
+| Gender | 2 | 2.0% | 2.98 | 0.023 | yes |
+| Continent | 3 | 2.5% | 2.48 | 0.026 | yes |
+| Professor class | 28 | 11.6% | 1.23 | 0.12 | no |
+| School | 1 | 0.4% | 1.09 | 0.33 | no |
+
+Only gender and continent predict appearance. School and professor have no effect. The institutional factors that shape content do not shape how the art looks.
 
 ## Step 3: Visualizations
 
