@@ -1,0 +1,46 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Data (images and metadata are in separate contempart repo)
+data/*
+# But keep the frozen 2020 results and READMEs for reproducibility
+!data/original_2020/
+!data/README.md
+
+# Embeddings (large, regenerable)
+embeddings/*.npy
+embeddings/*.npz
+embeddings/*.pt
+embeddings/*.csv
+
+# Graphs (regenerable)
+graphs/*.npy
+graphs/*.graphml
+
+# Results (regenerable numpy files)
+results/*.npy
+
+# Environment
+.env
+
+# Claude
+.claude/
+
+# OS
+.DS_Store
+
+# R
+.Rhistory
+.RData
+
+# IDE
+.vscode/
+.idea/
