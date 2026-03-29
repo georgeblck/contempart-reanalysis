@@ -35,7 +35,7 @@ One goal of this re-analysis is to check whether the original dataset can be fai
 | VGG style distance matrix | computed in 2020 | reused from data/original_2020/ | same data |
 | VGG embedding dims | FC7: 4,096; Texture: 4,096; Archetype: 72 | not recomputed | -- |
 | CLIP embedding dims | not tested | C-vectors: 768 | new |
-| SD VAE embedding dims | not tested | A-vectors: 16,384 | pending |
+| SD VAE embedding dims | not tested | A-vectors: 16,384 | done |
 | PCA components | not reported | 50 (82.1% variance) | -- |
 | Aggregation method | per-artist centroid (p.12) | per-artist mean | same method |
 | Stat test (social network) | Spearman rho, no p-values | Mantel + Spearman, 9999 permutations | upgraded |
@@ -71,21 +71,28 @@ One goal of this re-analysis is to check whether the original dataset can be fai
 | G^U vs VGG (FC7) | Spearman rho | rho=0.007, no p-value | Mantel (same data) | r=0.042, p=0.25 | still not significant |
 | G^U vs Texture | Spearman rho | rho=0.043, no p-value | not re-run | -- | -- |
 | G^U vs Archetype | Spearman rho | rho=0.012, no p-value | not re-run | -- | -- |
-| G^U vs C-vectors | not tested | not tested | Mantel | r=0.111, p=0.010 | new, significant |
-| G^Y vs VGG (FC7) | Spearman rho | rho=-0.032, no p-value | Mantel (same data) | r=-0.037, p=0.22 | still not significant |
+| G^U vs C-vectors | not tested | not tested | Mantel | r=0.111, p=0.009 | new, significant |
+| G^U vs A-vectors | not tested | not tested | Mantel | r=0.013, p=0.66 | new, not significant |
+| G^Y vs VGG (FC7) | Spearman rho | rho=-0.032, no p-value | Mantel (same data) | r=-0.037, p=0.23 | still not significant |
 | G^Y vs Texture | Spearman rho | rho=-0.025, no p-value | not re-run | -- | -- |
 | G^Y vs Archetype | Spearman rho | rho=-0.057, no p-value | not re-run | -- | -- |
 | G^Y vs C-vectors | not tested | not tested | Mantel | r=0.002, p=0.96 | new, not significant |
-| A-vectors (all tests) | not tested | not tested | pending | -- | pending |
+| G^Y vs A-vectors | not tested | not tested | Mantel | r=0.038, p=0.13 | new, not significant |
+| School vs A-vectors | not tested | not tested | Mantel | r=0.000, p=0.99 | new, not significant |
+| School vs A-vectors | not tested | not tested | PERMANOVA | F=1.948, p=0.004 | new, significant (centroid only) |
+| Gender vs A-vectors | not tested | not tested | Mantel | r=0.020, p=0.007 | new, significant |
+| Gender vs A-vectors | not tested | not tested | PERMANOVA | F=4.031, p=0.02 | new, significant |
+| Nationality vs A-vectors | not tested | not tested | Mantel | r=-0.010, p=0.77 | new, not significant |
+| Professor vs A-vectors | not tested | not tested | Mantel | r=0.003, p=0.43 | new, not significant |
+| Professor vs A-vectors | not tested | not tested | PERMANOVA | F=1.553, p=0.003 | new, significant (centroid only) |
 
-Note: "style" in the original means VGG-based texture/style features. "C-vectors" means CLIP ViT-L/14 semantic content features. These capture different aspects of the artwork (see [Feature extraction](#feature-extraction)).
+Note: "style" in the original means VGG-based texture/style features. "C-vectors" = CLIP ViT-L/14 semantic content. "A-vectors" = SD 2.0 VAE visual appearance. These capture different aspects of the artwork (see [Feature extraction](#feature-extraction)).
 
 ### What is still missing
 
 - Mantel/PERMANOVA on original VGG features against demographics (school, gender, professor). Only the social network comparison has been done so far.
 - Texture and Archetype embeddings not re-tested (only VGG FC7 cosine). These had different Spearman values in the original Table 3.
-- A-vectors (SD 2.0 VAE appearance features) pending overnight run.
-- Intra-artist style variance (Table 2 in original) not replicated.
+- Intra-artist style variance (Table 2 in original) not replicated in contempart-clip.
 - Once rsync completes: re-check image count to resolve the 161 missing images.
 
 
@@ -109,9 +116,9 @@ Two embeddings from modern foundation models:
 
 1. C-vectors (CLIP ViT-L/14, 768-dim): Semantic content, capturing what the painting depicts (objects, scenes, composition). Following Kim et al. 2025.
 
-2. A-vectors (SD 2.0 VAE, 16384-dim): Visual appearance (colors, brightness, composition, texture). Pending, not yet computed.
+2. A-vectors (SD 2.0 VAE, 16384-dim): Visual appearance (colors, brightness, composition, texture). Closer to what VGG Gram matrices capture, but from a generative model's perspective.
 
-C-vectors capture content, not style. This is a fundamentally different aspect of the artwork.
+C-vectors capture content, A-vectors capture appearance. Neither is identical to the original VGG style features.
 
 
 ## Aggregation
@@ -174,11 +181,11 @@ No quantitative results. Visual inspection only:
 
 > "These embeddings of artistic style were shown to be entirely independent of any non-visual data." (p.14)
 
-### Re-analysis: demographics vs content (C-vectors)
+### Re-analysis: demographics vs C-vectors (content)
 
 | Test | Variable | Statistic | p-value | Significant? |
 |------|----------|-----------|---------|--------------|
-| Mantel | school | r=0.030 | 0.0003 | yes |
+| Mantel | school | r=0.030 | 0.0001 | yes |
 | PERMANOVA | school | F=3.249 | 0.0001 | yes |
 | Mantel | gender | r=0.010 | 0.18 | no |
 | PERMANOVA | gender | F=5.004 | 0.0001 | yes |
@@ -187,18 +194,35 @@ No quantitative results. Visual inspection only:
 | Mantel | professor_class | r=0.028 | 0.0001 | yes |
 | PERMANOVA | professor_class | F=2.337 | 0.0001 | yes |
 
+### Re-analysis: demographics vs A-vectors (appearance)
+
+| Test | Variable | Statistic | p-value | Significant? |
+|------|----------|-----------|---------|--------------|
+| Mantel | school | r=0.000 | 0.99 | no |
+| PERMANOVA | school | F=1.948 | 0.004 | yes |
+| Mantel | gender | r=0.020 | 0.007 | yes |
+| PERMANOVA | gender | F=4.031 | 0.02 | yes |
+| Mantel | nationality | r=-0.010 | 0.77 | no |
+| PERMANOVA | nationality | F=1.053 | 0.37 | no |
+| Mantel | professor_class | r=0.003 | 0.43 | no |
+| PERMANOVA | professor_class | F=1.553 | 0.003 | yes |
+
+A-vectors show a different pattern from C-vectors. School and professor effects are absent in Mantel (no pairwise distance correlation) but present in PERMANOVA (centroid differences). Gender is the one variable significant in both tests for A-vectors. This mirrors the original VGG null result more closely than C-vectors do, consistent with A-vectors capturing visual appearance (similar to VGG style) rather than semantic content.
+
 ### Re-analysis: social network vs embeddings
 
 Using the original paper's pre-computed node2vec distance matrices (stored in data/original_2020/, not recomputed):
 
 | Comparison | Mantel r | p-value | Spearman rho | Significant? |
 |------------|----------|---------|--------------|--------------|
-| C-vectors vs G^U | r=0.111 | 0.010 | rho=0.059 | yes |
+| C-vectors vs G^U | r=0.111 | 0.009 | rho=0.059 | yes |
 | C-vectors vs G^Y | r=0.002 | 0.96 | rho=0.018 | no |
+| A-vectors vs G^U | r=0.013 | 0.66 | rho=0.003 | no |
+| A-vectors vs G^Y | r=0.038 | 0.13 | rho=0.028 | no |
 | VGG style (2020) vs G^U | r=0.042 | 0.25 | rho=-0.005 | no |
-| VGG style (2020) vs G^Y | r=-0.037 | 0.22 | rho=-0.029 | no |
+| VGG style (2020) vs G^Y | r=-0.037 | 0.23 | rho=-0.029 | no |
 
-n=364 artists. Both CLIP and VGG tested against the same node2vec matrices using the same Mantel test. CLIP content shows a significant correlation with the artist-to-artist network (G^U) that VGG style does not. Neither feature type correlates with the full network (G^Y).
+n=364 artists. All three embedding types tested against the same node2vec matrices. Only C-vectors (content) show a significant correlation with G^U. A-vectors (appearance) and VGG style (texture) do not. No embedding type correlates with G^Y.
 
 
 ## Key differences that affect comparability

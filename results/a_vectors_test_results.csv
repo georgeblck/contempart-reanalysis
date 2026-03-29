@@ -1,0 +1,9 @@
+test,variable,statistic,p_value,significant
+Mantel,school,r=0.0001,0.9875,no
+PERMANOVA,school,F=1.9478,0.0035,yes
+Mantel,gender,r=0.0195,0.0073,yes
+PERMANOVA,gender,F=4.0309,0.0198,yes
+Mantel,nationality,r=-0.0097,0.7746,no
+PERMANOVA,nationality,F=1.0533,0.3678,no
+Mantel,professor_class,r=0.0033,0.4331,no
+PERMANOVA,professor_class,F=1.5525,0.0032,yes
