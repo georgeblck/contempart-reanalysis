@@ -1,7 +1,7 @@
 # contempArt Data
 
 Data from the contempArt dataset (Huckle, Garcia, Nakashima, ECCV Workshop 2020).
-442 early-career artists from 15 German art schools. 14,559 artworks.
+441 early-career artists from 15 German art schools. 14,398 artworks.
 
 ## Structure
 
