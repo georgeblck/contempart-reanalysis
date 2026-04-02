@@ -69,9 +69,25 @@ The gender result is interesting in the opposite direction: men and women produc
 
 For the full analysis, methodology comparison, and paper quotes, see [results/comparison.md](results/comparison.md) and [results/report.md](results/report.md).
 
-## Data
+## Setup
 
-442 artists, 15 German art schools, 14,559 artworks. Image data is not included in this repo. See [data/README.md](data/README.md) for the expected structure. Social network distance matrices from the original 2020 analysis are included in [data/original_2020/](data/original_2020/).
+Download the contempArt dataset from [Zenodo](https://doi.org/10.5281/zenodo.19365430), then run:
+
+```bash
+uv sync
+uv run python scripts/setup_data.py /path/to/zenodo/download
+```
+
+This links the images and metadata into the expected layout. The original 2020 social network distance matrices are already included in `data/original_2020/`.
+
+Then run the pipeline:
+
+```bash
+uv run python -m src.step1_embed       # extract CLIP + SD embeddings
+uv run python -m src.step2_statistics   # db-RDA, Mantel, PERMANOVA
+uv run python -m src.step3_visualize    # t-SNE plots
+uv run python -m src.step4_graph        # social network comparison
+```
 
 ## References
 
