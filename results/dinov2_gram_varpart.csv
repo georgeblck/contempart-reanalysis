@@ -1,0 +1,2 @@
+head,display,school_only,professor_only,shared,residual
+dinov2_gram,DINOv2-Gram,0.005957450492282912,0.027789082196941983,0.03780610569247933,0.9284473616182958

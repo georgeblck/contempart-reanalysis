@@ -1,0 +1,17 @@
+name,display,file,key,dim,role,backbone,normalized
+clip_l,CLIP-L,clip_openai/clip_openai_contempart.npz,embeddings,768,content,CLIP ViT-L/14 (OpenAI),True
+clip_b32,CLIP-B32,clip_openai_b32/clip_openai_b32_contempart.npz,embeddings,512,content,CLIP ViT-B/32 (OpenAI),True
+openclip_l,OpenCLIP-L,clip_openclip/clip_openclip_contempart.npz,embeddings,768,content,OpenCLIP ViT-L/14 (LAION-2B),True
+dinov2_cls,DINOv2-CLS,dinov2/dinov2_contempart.npz,cls_embeddings,1024,general,DINOv2 ViT-L/14,True
+dinov2_l12,DINOv2-L12,dinov2/dinov2_contempart.npz,layer12_embeddings,1024,general,DINOv2 ViT-L/14,True
+dinov2_style,DINOv2-Style,dinov2/dinov2_contempart.npz,embeddings,1024,style,DINOv2 ViT-L/14,True
+dinov2_gram,DINOv2-Gram,dinov2/dinov2_contempart.npz,gram_embeddings,1024,style,DINOv2 ViT-L/14,True
+csd_content,CSD-Content,csd/csd_contempart.npz,content_embeddings,768,content,CSD ViT-L/14,True
+csd_style,CSD-Style,csd/csd_contempart.npz,embeddings,768,style,CSD ViT-L/14,True
+scflow_content,SCFlow-Content,scflow/scflow_contempart.npz,content_embeddings,768,content,SCFlow (ICCV 2025),False
+scflow_style,SCFlow-Style,scflow/scflow_contempart.npz,embeddings,768,style,SCFlow (ICCV 2025),False
+goya_content,GOYA-Content,goya/goya_contempart.npz,content_embeddings,2048,content,GOYA MLP (on CLIP-B32),False
+goya_style,GOYA-Style,goya/goya_contempart.npz,style_embeddings,2048,style,GOYA MLP (on CLIP-B32),False
+kim_c,KIM-C,sd2_kim/sd2_kim_contempart.npz,embeddings,1024,content,OpenCLIP ViT-H/14 (LAION-2B),True
+kim_a,KIM-A,sd2_kim/sd2_kim_contempart.npz,a_vectors,16384,appearance,SD 2.1 VAE,False
+sscd,SSCD,sscd/sscd_contempart.npz,embeddings,512,duplicate,SSCD ResNet50,True

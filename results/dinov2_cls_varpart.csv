@@ -1,0 +1,2 @@
+head,display,school_only,professor_only,shared,residual
+dinov2_cls,DINOv2-CLS,0.004227580961417843,0.04136830495022259,0.05009154230556512,0.9043125717827944

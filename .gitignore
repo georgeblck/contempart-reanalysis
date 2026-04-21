@@ -15,11 +15,15 @@ data/*
 !data/original_2020/
 !data/README.md
 
-# Embeddings (large, regenerable)
+# Embeddings (large, ship via Zenodo)
 embeddings/*.npy
 embeddings/*.npz
+embeddings/**/*.npz
 embeddings/*.pt
 embeddings/*.csv
+
+# Archive: stale npy inherited from the two-head pipeline (large)
+archive/**/*.npy
 
 # Graphs (regenerable)
 graphs/*.npy
@@ -27,6 +31,9 @@ graphs/*.graphml
 
 # Results (regenerable numpy files)
 results/*.npy
+
+# Runtime logs
+logs/
 
 # Environment
 .env

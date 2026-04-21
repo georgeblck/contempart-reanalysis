@@ -129,7 +129,10 @@ def main() -> None:
     print(f"  2020 data: {'OK (committed in repo)' if has_original else 'MISSING'}")
     print()
     print("Ready to run the pipeline:")
-    print("  uv run python -m src.step1_embed")
+    print("  uv run python -m src.step1_link       # validate embeddings, build manifest")
+    print("  uv run python -m src.step2_statistics # Mantel + PERMANOVA (16 heads)")
+    print("  Rscript R/dbrda.R                      # db-RDA (16 heads)")
+    print("  uv run python -m src.step4_graph       # social-network analysis")
 
 
 if __name__ == "__main__":

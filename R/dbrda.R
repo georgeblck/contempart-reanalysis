@@ -1,120 +1,140 @@
-# Distance-based Redundancy Analysis (db-RDA)
+# Distance-based Redundancy Analysis (db-RDA) for every registered head.
 #
-# Tests the unique contribution of each demographic variable to embedding
-# distances, controlling for confounding between variables.
+# Reads `results/heads.csv` (written by `src.step1_link`) and loops over
+# every head producing:
+#   results/<head>_dbrda.csv         marginal tests (each var controlling
+#                                     for the others)
+#   results/<head>_varpart.csv       school-vs-professor variance partition
 #
-# Addresses the key limitation of Mantel tests: school and professor are
-# confounded (professors work at specific schools). db-RDA partitions
-# variance so we can see each variable's independent contribution.
+# Finally writes a combined wide CSV:
+#   results/all_dbrda.csv            one row per (head, variable)
 #
-# Run: Rscript R/dbrda.R
+# Run: Rscript R/dbrda.R [head1 head2 ...]
 
-library(vegan)
-library(readr)
-library(dplyr)
+suppressPackageStartupMessages({
+  library(vegan)
+  library(readr)
+  library(dplyr)
+  library(reticulate)
+  library(tidyr)
+  library(parallel)
+})
 
 results_dir <- "results"
+heads <- read_csv(file.path(results_dir, "heads.csv"), show_col_types = FALSE)
 
-for (vec_name in c("c_vectors", "a_vectors")) {
-  emb_path <- file.path(results_dir, paste0(vec_name, "_artist_emb.npy"))
-  if (!file.exists(emb_path)) {
-    message("Skipping ", vec_name, " (no embeddings)")
+n_perm <- 999
+n_cores <- max(1, detectCores() - 1)
+message("Using ", n_cores, " cores, ", n_perm, " permutations")
+
+args <- commandArgs(trailingOnly = TRUE)
+if (length(args) > 0) {
+  heads <- heads |> filter(name %in% args)
+}
+
+np <- import("numpy", convert = FALSE)
+
+all_marginal <- list()
+all_varpart <- list()
+
+for (i in seq_len(nrow(heads))) {
+  head_name <- heads$name[i]
+  head_display <- heads$display[i]
+
+  emb_path <- file.path(results_dir, paste0(head_name, "_artist_emb.npy"))
+  meta_path <- file.path(results_dir, paste0(head_name, "_metadata.csv"))
+  if (!file.exists(emb_path) || !file.exists(meta_path)) {
+    message("Skipping ", head_name, " (missing artifacts)")
     next
   }
 
-  label <- if (vec_name == "c_vectors") "C-vectors (content)" else "A-vectors (appearance)"
   message("\n", paste(rep("=", 60), collapse = ""))
-  message("db-RDA: ", label)
+  message("db-RDA: ", head_display, " [", head_name, "]")
   message(paste(rep("=", 60), collapse = ""))
 
-  # Load UMAP data (has metadata merged in)
-  df <- read_csv(
-    file.path(results_dir, paste0(vec_name, "_umap_data.csv")),
-    show_col_types = FALSE
-  )
-
-  # Load the artist distance matrix (cosine, from PCA embeddings)
-  # We need the raw artist embeddings to compute a distance matrix
-  # Use reticulate to load .npy, or compute from UMAP data
-  # Actually, we should use the cosine distance on the full embeddings
-  # Let's load via reticulate
-  library(reticulate)
-  np <- import("numpy", convert = FALSE)
   emb_raw <- py_to_r(np$load(emb_path))
+  df <- read_csv(meta_path, show_col_types = FALSE)
+  stopifnot(nrow(emb_raw) == nrow(df))
 
-  # Match ordering: embeddings are sorted by artist_id
-  artist_order <- sort(unique(df$artist_id))
-  # df is already sorted by artist_id from the merge
-  stopifnot(nrow(emb_raw) == length(artist_order))
-
-  # Compute cosine distance matrix (vegan doesn't support cosine natively)
-  # cosine distance = 1 - cosine similarity
-  norm_emb <- emb_raw / sqrt(rowSums(emb_raw^2))
+  # Cosine distance (row-normalize, then 1 - dot product)
+  norms <- sqrt(rowSums(emb_raw^2))
+  norm_emb <- emb_raw / norms
   cos_sim <- tcrossprod(norm_emb)
   cos_dist <- as.dist(1 - cos_sim)
 
-  # Prepare predictors (factors)
   env <- df |>
     mutate(
       school = factor(school),
-      gender = factor(tidyr::replace_na(gender, "Unknown")),
-      professor_class = factor(tidyr::replace_na(professor_class, "Unknown")),
-      continent = factor(tidyr::replace_na(continent, "Unknown"))
+      gender = factor(replace_na(gender, "Unknown")),
+      professor_class = factor(replace_na(professor_class, "Unknown")),
+      continent = factor(replace_na(continent, "Unknown"))
     ) |>
     select(school, gender, professor_class, continent)
 
-  # ---- Full model: all variables ----
-  message("\n--- Full model (all variables) ---")
-  full_model <- dbrda(cos_dist ~ school + gender + professor_class + continent, data = env)
-  full_anova <- anova(full_model, permutations = 9999)
-  message("Total constrained variance: ",
-          round(full_model$CCA$tot.chi / full_model$tot.chi * 100, 1), "%")
-  message("Global test: F=", round(full_anova$F[1], 2),
-          ", p=", format(full_anova$`Pr(>F)`[1], digits = 4))
-
-  # ---- Marginal tests: each variable controlling for the others ----
-  message("\n--- Marginal tests (Type II, each controlling for others) ---")
-  margin_anova <- anova(full_model, by = "margin", permutations = 9999)
-  print(margin_anova)
-
-  # ---- Variance partitioning ----
-  message("\n--- Variance partitioning: school vs professor ---")
-  # How much do school and professor overlap?
-  vp <- varpart(cos_dist, ~ school, ~ professor_class, data = env)
-  message("School alone: ", round(vp$part$indfract$Adj.R.squared[1] * 100, 2), "%")
-  message("Professor alone: ", round(vp$part$indfract$Adj.R.squared[2] * 100, 2), "%")
-  message("Shared: ", round(vp$part$indfract$Adj.R.squared[3] * 100, 2), "%")
-
-  # ---- Save results ----
-  # Marginal tests as CSV
-  ma <- as.data.frame(margin_anova)
-  margin_df <- data.frame(
-    variable = rownames(ma),
-    Df = ma$Df,
-    variance = ma$SumOfSqs,
-    F_stat = ma$F,
-    p_value = ma$`Pr(>F)`,
-    row.names = NULL
+  full_model <- dbrda(
+    cos_dist ~ school + gender + professor_class + continent,
+    data = env
   )
-  # Remove the Residual row for cleaner output
-  margin_df <- margin_df[!is.na(margin_df$F_stat), ]
+  full_anova <- anova(full_model, permutations = n_perm, parallel = n_cores)
+  total_pct <- full_model$CCA$tot.chi / full_model$tot.chi * 100
+  message(sprintf(
+    "Total constrained: %.1f%%  Global F=%.2f  p=%.4f",
+    total_pct, full_anova$F[1], full_anova$`Pr(>F)`[1]
+  ))
 
-  out_path <- file.path(results_dir, paste0(vec_name, "_dbrda.csv"))
-  write_csv(margin_df, out_path)
-  message("\nSaved to ", out_path)
+  margin_anova <- anova(full_model, by = "margin", permutations = n_perm, parallel = n_cores)
+  ma <- as.data.frame(margin_anova)
+  ma$variable <- rownames(ma)
+  margin_df <- ma |>
+    filter(!is.na(F)) |>
+    transmute(
+      head = head_name,
+      display = head_display,
+      variable = variable,
+      Df = Df,
+      variance = SumOfSqs,
+      variance_pct = SumOfSqs / full_model$tot.chi * 100,
+      F_stat = F,
+      p_value = `Pr(>F)`
+    )
+  write_csv(margin_df, file.path(results_dir, paste0(head_name, "_dbrda.csv")))
+  all_marginal[[head_name]] <- margin_df
 
-  # Print a clean summary
-  message("\n--- Summary ---")
-  message(sprintf("%-20s %8s %8s %8s", "Variable", "F", "p-value", "Sig?"))
-  message(paste(rep("-", 50), collapse = ""))
-  for (i in seq_len(nrow(margin_df))) {
-    sig <- if (!is.na(margin_df$p_value[i]) && margin_df$p_value[i] < 0.05) "yes" else "no"
-    message(sprintf("%-20s %8.2f %8.4f %8s",
-                    margin_df$variable[i],
-                    margin_df$F_stat[i],
-                    margin_df$p_value[i],
-                    sig))
+  # school vs professor variance partition
+  vp <- varpart(cos_dist, ~ school, ~ professor_class, data = env)
+  frac <- vp$part$indfract$Adj.R.squared
+  vp_df <- tibble(
+    head = head_name,
+    display = head_display,
+    school_only = frac[1],
+    professor_only = frac[3],
+    shared = frac[2],
+    residual = frac[4]
+  )
+  write_csv(vp_df, file.path(results_dir, paste0(head_name, "_varpart.csv")))
+  all_varpart[[head_name]] <- vp_df
+
+  for (j in seq_len(nrow(margin_df))) {
+    sig <- if (!is.na(margin_df$p_value[j]) && margin_df$p_value[j] < 0.05) "*" else " "
+    message(sprintf(
+      "  %-18s var=%5.2f%%  F=%5.2f  p=%.4f %s",
+      margin_df$variable[j],
+      margin_df$variance_pct[j],
+      margin_df$F_stat[j],
+      margin_df$p_value[j],
+      sig
+    ))
   }
+  message(sprintf(
+    "  varpart: school-only=%.1f%%  prof-only=%.1f%%  shared=%.1f%%",
+    vp_df$school_only * 100, vp_df$professor_only * 100, vp_df$shared * 100
+  ))
 }
 
-message("\nDone.")
+combined <- bind_rows(all_marginal)
+write_csv(combined, file.path(results_dir, "all_dbrda.csv"))
+
+vp_combined <- bind_rows(all_varpart)
+write_csv(vp_combined, file.path(results_dir, "all_varpart.csv"))
+
+message("\nDone. ", nrow(combined), " rows -> results/all_dbrda.csv")
