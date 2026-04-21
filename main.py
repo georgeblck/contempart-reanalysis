@@ -1,5 +1,5 @@
 def main():
-    print("Hello from contempart-clip!")
+    print("Hello from contempart-reanalysis!")
 
 
 if __name__ == "__main__":

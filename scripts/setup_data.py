@@ -71,7 +71,7 @@ def symlink_or_copy(src: Path, dst: Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Set up contempart-clip data from a Zenodo download."
+        description="Set up contempart-reanalysis data from a Zenodo download."
     )
     parser.add_argument("zenodo_dir", type=Path, help="Path to the Zenodo download")
     parser.add_argument(

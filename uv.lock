@@ -154,12 +154,13 @@ wheels = [
 ]
 
 [[package]]
-name = "contempart-clip"
+name = "contempart-reanalysis"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "accelerate", marker = "sys_platform == 'darwin'" },
     { name = "diffusers", marker = "sys_platform == 'darwin'" },
+    { name = "httpx", marker = "sys_platform == 'darwin'" },
     { name = "matplotlib", marker = "sys_platform == 'darwin'" },
     { name = "networkx", marker = "sys_platform == 'darwin'" },
     { name = "node2vec", marker = "sys_platform == 'darwin'" },
@@ -181,6 +182,7 @@ dependencies = [
 requires-dist = [
     { name = "accelerate", specifier = ">=1.13.0" },
     { name = "diffusers", specifier = ">=0.37.1" },
+    { name = "httpx", specifier = ">=0.28.1" },
     { name = "matplotlib", specifier = ">=3.10.8" },
     { name = "networkx", specifier = ">=3.6.1" },
     { name = "node2vec", specifier = ">=0.4.3" },

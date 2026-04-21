@@ -1,12 +1,13 @@
 [project]
-name = "contempart-clip"
+name = "contempart-reanalysis"
 version = "0.1.0"
-description = "Add your description here"
+description = "Re-analysis of contempArt (Huckle 2020) across 16 embedding heads"
 readme = "README.md"
 requires-python = "==3.12.*"
 dependencies = [
     "accelerate>=1.13.0",
     "diffusers>=0.37.1",
+    "httpx>=0.28.1",
     "matplotlib>=3.10.8",
     "networkx>=3.6.1",
     "node2vec>=0.4.3",

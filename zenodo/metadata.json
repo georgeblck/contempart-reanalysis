@@ -1,0 +1,54 @@
+{
+  "metadata": {
+    "upload_type": "dataset",
+    "title": "contempArt embeddings: 16 image-embedding heads across 9 backbones",
+    "version": "1.0.0",
+    "language": "eng",
+    "description": "<p>Precomputed image embeddings for the contempArt dataset (441 contemporary German art students, 14,390 artworks). Ships 16 embedding heads across 9 backbones: CLIP (ViT-L/14, ViT-B/32), OpenCLIP (ViT-L/14, ViT-H/14 via KIM-C), DINOv2 (style via fruit-SALAD, gram, CLS, layer-12), CSD (style + content), SCFlow (style + content), GOYA (style + content), SD 2.1 VAE (KIM-A appearance), and SSCD (near-duplicate).</p><p>Each <code>.npz</code> is keyed by a <code>filenames</code> array plus one or more embedding arrays. All rows are aligned across files. See the <code>README.md</code> inside the record for full format, head table, and quickstart.</p><p>Derived from the original contempArt dataset (Huckle, Garcia &amp; Nakashima, ECCV 2020 workshop). Analysis code and results: <a href=\"https://github.com/georgeblck/contempart-reanalysis\">github.com/georgeblck/contempart-reanalysis</a>.</p><p><strong>License:</strong> CC-BY-NC 4.0, chosen conservatively because SSCD weights carry a non-commercial clause that propagates to derived features. Individual backbones are more permissive; see the record README for per-model licenses.</p>",
+    "creators": [
+      {
+        "name": "Huckle, Nikolai",
+        "affiliation": ""
+      }
+    ],
+    "keywords": [
+      "image embeddings",
+      "contemporary art",
+      "CLIP",
+      "DINOv2",
+      "CSD",
+      "SCFlow",
+      "GOYA",
+      "Stable Diffusion",
+      "SSCD",
+      "fruit-SALAD",
+      "style descriptor",
+      "content descriptor",
+      "contempArt",
+      "computer vision for art"
+    ],
+    "access_right": "open",
+    "license": "cc-by-nc-4.0",
+    "related_identifiers": [
+      {
+        "identifier": "10.5281/zenodo.19365430",
+        "relation": "isDerivedFrom",
+        "resource_type": "dataset",
+        "scheme": "doi"
+      },
+      {
+        "identifier": "https://github.com/georgeblck/contempart-reanalysis",
+        "relation": "isSupplementTo",
+        "resource_type": "software",
+        "scheme": "url"
+      },
+      {
+        "identifier": "arXiv:2008.09558",
+        "relation": "isDerivedFrom",
+        "resource_type": "publication-conferencepaper",
+        "scheme": "arxiv"
+      }
+    ],
+    "notes": "Embeddings computed in fp16 on a single NVIDIA A6000 and stored as fp32 npz. Full reproducibility pipeline at https://github.com/georgeblck/contempart-reanalysis."
+  }
+}

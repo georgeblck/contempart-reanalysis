@@ -1,4 +1,4 @@
-# contempart-clip
+# contempart-reanalysis
 
 A re-analysis of the [contempArt study](https://arxiv.org/abs/2008.09558)
 (Huckle, Garcia & Nakashima, ECCV Workshop 2020) across 16 modern image
