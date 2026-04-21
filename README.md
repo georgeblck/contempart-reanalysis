@@ -168,5 +168,5 @@ Mantel; 999 for db-RDA (multi-core).
 | Source | License | Refresh | Location |
 |---|---|---|---|
 | contempArt images + metadata | CC-BY 4.0 | static | Zenodo DOI [10.5281/zenodo.19365430](https://doi.org/10.5281/zenodo.19365430) |
-| 16 embedding npz files | inherits per model | static | Zenodo (new record, to be published) |
+| 16 embedding npz files | CC-BY-NC 4.0 | static | Zenodo DOI [10.5281/zenodo.19685514](https://doi.org/10.5281/zenodo.19685514) (concept: [19685513](https://doi.org/10.5281/zenodo.19685513)) |
 | 2020 node2vec + VGG distances | as original paper | static | included in `data/original_2020/` |
