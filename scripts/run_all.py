@@ -26,7 +26,6 @@ def run(cmd: list[str], label: str) -> None:
 def main() -> None:
     Path("logs").mkdir(exist_ok=True)
 
-    run(["uv", "run", "python", "-m", "src.step0_init_report"], "step0 init report")
     run(["uv", "run", "python", "-m", "src.step1_link"], "step1 link embeddings")
     run(["uv", "run", "python", "-m", "src.step2_statistics"], "step2 Mantel + PERMANOVA")
     run(["Rscript", "R/dbrda.R"], "step3 db-RDA (R, parallel)")

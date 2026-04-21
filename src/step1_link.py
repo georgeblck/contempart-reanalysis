@@ -20,7 +20,6 @@ import numpy as np
 import pandas as pd
 
 from .registry import EMBEDDINGS_DIR, HEADS
-from .report import Report
 
 IMAGE_ROOT = Path("data/images/visart2020")
 MANIFEST_PATH = EMBEDDINGS_DIR / "image_manifest.csv"
@@ -35,9 +34,6 @@ def parse_filename(fname: str) -> tuple[str, str]:
 
 
 def main() -> None:
-    report = Report()
-    report.header("## Step 1: Embedding validation")
-
     reference_filenames: np.ndarray | None = None
     reference_head: str | None = None
     rows: list[dict[str, object]] = []
@@ -102,17 +98,12 @@ def main() -> None:
     )
     heads_df.to_csv("results/heads.csv", index=False)
 
-    report.line(f"- Heads registered: {len(HEADS)}")
-    report.line(f"- Images: {len(manifest):,}")
-    report.line(f"- Artists: {manifest['artist'].nunique()}")
-    report.line(f"- Manifest: `{MANIFEST_PATH}`")
-    report.blank()
-    report.table(
-        ["Head", "Display", "Role", "N", "Dim", "Dtype"],
-        [[r["name"], r["display"], r["role"], r["n"], r["dim"], r["dtype"]] for r in rows],
-    )
-    report.save()
-    print(f"Step 1 complete. {len(HEADS)} heads, {len(manifest):,} images.")
+    print(f"Step 1 complete. {len(HEADS)} heads registered.")
+    print(f"  Images:  {len(manifest):,}")
+    print(f"  Artists: {manifest['artist'].nunique()}")
+    print(f"  Manifest: {MANIFEST_PATH}")
+    for r in rows:
+        print(f"  {r['name']:<16} {r['display']:<18} {r['role']:<10} n={r['n']:<5} dim={r['dim']:<6} {r['dtype']}")
 
 
 if __name__ == "__main__":

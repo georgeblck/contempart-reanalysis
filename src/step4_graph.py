@@ -25,7 +25,6 @@ from skbio import DistanceMatrix
 from skbio.stats.distance import mantel as skbio_mantel
 
 from .registry import HEADS, HEADS_BY_NAME, Head
-from .report import Report
 
 ORIGINAL_DIR = Path("data/original_2020")
 EMBEDDING_DIR = Path("embeddings")
@@ -138,15 +137,6 @@ def main() -> None:
 
     combined = pd.DataFrame(all_rows)
     combined.to_csv(RESULTS_DIR / "all_social.csv", index=False)
-
-    report = Report()
-    report.header("## Step 4: Social-network analysis (all heads)")
-    report.line(f"- Artists shared with 2020 graphs: {len(shared)}")
-    report.line(f"- Graphs: G^U (artist-to-artist), G^Y (full network), VGG-2020 (baseline)")
-    report.line(f"- Permutations: {PERMUTATIONS:,}")
-    report.blank()
-    report.line(f"Long table: `results/all_social.csv`")
-    report.save()
 
     print(f"\nStep 4 complete. {len(combined)} rows -> {RESULTS_DIR/'all_social.csv'}")
 

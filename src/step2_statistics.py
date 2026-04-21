@@ -29,7 +29,6 @@ from skbio.stats.distance import mantel as skbio_mantel
 from skbio.stats.distance import permanova as skbio_permanova
 
 from .registry import HEADS, HEADS_BY_NAME, Head
-from .report import Report
 
 EMBEDDING_DIR = Path("embeddings")
 METADATA_PATH = Path("data/metadata/artists.csv")
@@ -155,16 +154,6 @@ def main() -> None:
 
     combined = pd.DataFrame(all_rows)
     combined.to_csv(RESULTS_DIR / "all_mantel_permanova.csv", index=False)
-
-    report = Report()
-    report.header("## Step 2: Mantel + PERMANOVA (all heads)")
-    report.line(f"- Heads: {len(heads)}")
-    report.line(f"- Artists: {manifest['artist'].nunique()}")
-    report.line(f"- Permutations: {PERMUTATIONS:,}")
-    report.blank()
-    report.line(f"Per-head CSVs in `results/<head>_test_results.csv`.")
-    report.line(f"Combined long table: `results/all_mantel_permanova.csv`.")
-    report.save()
 
     print(f"\nStep 2 complete. {len(combined)} rows -> {RESULTS_DIR/'all_mantel_permanova.csv'}")
 

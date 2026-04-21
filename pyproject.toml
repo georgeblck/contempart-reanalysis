@@ -5,24 +5,11 @@ description = "Re-analysis of contempArt (Huckle 2020) across 16 embedding heads
 readme = "README.md"
 requires-python = "==3.12.*"
 dependencies = [
-    "accelerate>=1.13.0",
-    "diffusers>=0.37.1",
     "httpx>=0.28.1",
-    "matplotlib>=3.10.8",
-    "networkx>=3.6.1",
-    "node2vec>=0.4.3",
     "numpy>=2.4.3",
-    "open-clip-torch>=3.3.0",
     "pandas>=3.0.1",
-    "pillow>=12.1.1",
     "scikit-bio>=0.7.2",
-    "scikit-learn>=1.8.0",
-    "statsmodels>=0.14.6",
-    "torch>=2.11.0",
-    "torch-geometric>=2.7.0",
-    "torchvision>=0.26.0",
-    "transformers>=5.4.0",
-    "umap-learn>=0.5.11",
+    "scipy>=1.14.0",
 ]
 
 [tool.uv]

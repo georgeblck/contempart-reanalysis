@@ -151,7 +151,6 @@ Rscript -e 'renv::restore()'   # R deps (vegan, parallel, etc.)
 uv run python scripts/setup_data.py /path/to/zenodo/download
 
 # 3. Pipeline (or just: uv run python scripts/run_all.py)
-uv run python -m src.step0_init_report
 uv run python -m src.step1_link           # validate 16 npz files, build manifest
 uv run python -m src.step2_statistics     # Mantel + PERMANOVA, all heads
 Rscript R/dbrda.R                          # db-RDA + varpart, all heads (parallel)
